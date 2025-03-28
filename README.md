@@ -14,6 +14,10 @@
 <br>
 </div>
 
+> [!NOTE]
+> Pagina Online [aqui!](https://jempunkn.github.io/aboutmypc)
+
+
 ### **INFO About your PC**
 
 Este projeto é só um prototipo simples com o fim de ajudar usuarios que queiram saber um pouco sobre seu dispositivo.
