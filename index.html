@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informações do PC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        table {
+            width: 100%;
+            max-width: 900px;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        .loading {
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loading">Carregando informações...</div>
+
+    <table id="infoTable" style="display: none;">
+        <thead>
+            <tr>
+                <th>Informação</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Hora Atual</td>
+                <td id="currentTime"></td>
+            </tr>
+            <tr>
+                <td>Data Atual</td>
+                <td id="currentDate"></td>
+            </tr>
+            <tr>
+                <td>Fuso Horário</td>
+                <td id="timeZone"></td>
+            </tr>
+            <tr>
+                <td>Idioma do Navegador</td>
+                <td id="language"></td>
+            </tr>
+            <tr>
+                <td>User Agent</td>
+                <td id="userAgent"></td>
+            </tr>
+            <tr>
+                <td>Resolução da Tela</td>
+                <td id="screenResolution"></td>
+            </tr>
+            <tr>
+                <td>IP Público</td>
+                <td id="publicIP"></td>
+            </tr>
+            <tr>
+                <td>Memória Total (GB)</td>
+                <td id="totalMemory"></td>
+            </tr>
+            <tr>
+                <td>Memória Livre (GB)</td>
+                <td id="freeMemory"></td>
+            </tr>
+            <tr>
+                <td>Processador</td>
+                <td id="cpu"></td>
+            </tr>
+            <tr>
+                <td>GPU</td>
+                <td id="gpu"></td>
+            </tr>
+            <tr>
+                <td>Carregando o PC?</td>
+                <td id="chargingStatus"></td>
+            </tr>
+            <tr>
+                <td>Bateria</td>
+                <td id="batteryStatus"></td>
+            </tr>
+            <tr>
+                <td>Armazenamento Disponível</td>
+                <td id="storageStatus"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        // Função para obter hora e data
+        function formatDateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString();
+            document.getElementById('timeZone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        }
+
+        // Função para obter o idioma
+        function getLanguage() {
+            document.getElementById('language').textContent = navigator.language || "Desconhecido";
+        }
+
+        // Função para obter o User Agent
+        function getUserAgent() {
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+        }
+
+        // Função para obter a resolução da tela
+        function getScreenResolution() {
+            document.getElementById('screenResolution').textContent = `${window.innerWidth}x${window.innerHeight}`;
+        }
+
+        // Função para obter o IP Público
+        function getPublicIP() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('publicIP').textContent = data.ip;
+                })
+                .catch(() => {
+                    document.getElementById('publicIP').textContent = "Não disponível";
+                });
+        }
+
+        // Função para obter informações de memória e CPU
+        function getSystemInfo() {
+            if (navigator.deviceMemory) {
+                document.getElementById('totalMemory').textContent = `${navigator.deviceMemory} GB`;
+            } else {
+                document.getElementById('totalMemory').textContent = "Não disponível";
+            }
+
+            if (navigator.hardwareConcurrency) {
+                document.getElementById('cpu').textContent = `${navigator.hardwareConcurrency} núcleos de CPU`;
+            } else {
+                document.getElementById('cpu').textContent = "Não disponível";
+            }
+
+            // Tentando obter a GPU (não garantido em todos os navegadores)
+            if (navigator.gpu) {
+                document.getElementById('gpu').textContent = navigator.gpu;
+            } else {
+                document.getElementById('gpu').textContent = "Não disponível";
+            }
+        }
+
+        // Função para verificar o estado de carregamento do PC
+        function checkChargingStatus() {
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    const charging = battery.charging ? "Sim" : "Não";
+                    document.getElementById('chargingStatus').textContent = charging;
+                    document.getElementById('batteryStatus').textContent = `${battery.level * 100}%`;
+                });
+            } else {
+                document.getElementById('chargingStatus').textContent = "Não disponível";
+                document.getElementById('batteryStatus').textContent = "Não disponível";
+            }
+        }
+
+        // Função para obter informações de armazenamento (se disponível)
+        function getStorageStatus() {
+            if (navigator.storage && navigator.storage.estimate) {
+                navigator.storage.estimate().then(estimate => {
+                    document.getElementById('storageStatus').textContent = `${(estimate.usage / 1024 / 1024).toFixed(2)} MB / ${(estimate.quota / 1024 / 1024).toFixed(2)} MB`;
+                });
+            } else {
+                document.getElementById('storageStatus').textContent = "Não disponível";
+            }
+        }
+
+        // Exibir informações na tabela
+        function displayInfo() {
+            formatDateTime();
+            getLanguage();
+            getUserAgent();
+            getScreenResolution();
+            getPublicIP();
+            getSystemInfo();
+            checkChargingStatus();
+            getStorageStatus();
+            document.getElementById('infoTable').style.display = 'table';
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        // Chama a função para exibir as informações
+        displayInfo();
+        setInterval(formatDateTime, 1000); // Atualiza a hora a cada segundo
+    </script>
+
+</body>
+</html>
